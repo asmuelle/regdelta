@@ -1,0 +1,20 @@
+{
+  "__fixture_note": "Seeded company profile for the M1 vertical slice (consumer lending, federal).",
+  "id": "co-meridian-home-lending",
+  "name": "Meridian Home Lending, Inc.",
+  "vertical": "consumer_lending",
+  "products": [
+    "Home equity line of credit (HELOC)",
+    "Closed-end home improvement installment loans"
+  ],
+  "jurisdictions": ["US-FED", "US-CA"],
+  "licenseTypes": ["State mortgage lender license", "California Financing Law license"],
+  "watchTerms": [
+    "home equity",
+    "Regulation Z",
+    "Truth in Lending",
+    "disclosure",
+    "consumer credit",
+    "open-end credit"
+  ]
+}

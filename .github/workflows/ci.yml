@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: regdelta
+          POSTGRES_PASSWORD: regdelta
+          POSTGRES_DB: regdelta
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U regdelta"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://regdelta:regdelta@localhost:5432/regdelta
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: extractions/setup-just@v3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable corepack (pnpm)
+        run: corepack enable
+
+      - name: Check whether the workspace is bootstrapped
+        id: bootstrap
+        run: |
+          if [ -f package.json ]; then
+            echo "bootstrapped=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "bootstrapped=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::package.json not found — docs-only scaffold, skipping install and just ci (stays green by design)."
+          fi
+
+      - name: Install dependencies
+        if: steps.bootstrap.outputs.bootstrapped == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Run merge gate (just ci)
+        if: steps.bootstrap.outputs.bootstrapped == 'true'
+        run: just ci

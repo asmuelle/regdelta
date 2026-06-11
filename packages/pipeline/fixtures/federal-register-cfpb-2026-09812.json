@@ -1,0 +1,21 @@
+{
+  "__fixture_note": "Recorded replay of two Federal Register API requests (document metadata + raw_text_url body) for offline tests. Shape mirrors federalregister.gov/api/v1/documents/{document_number}.json. Never fetched live in tests (AGENTS.md testing policy 4).",
+  "document_number": "2026-09812",
+  "type": "Rule",
+  "title": "Truth in Lending (Regulation Z); Home Equity Plan Disclosure Timing",
+  "abstract": "The Bureau of Consumer Financial Protection is amending Regulation Z to revise the timing requirements for disclosures provided in connection with home equity lines of credit.",
+  "agencies": [
+    {
+      "name": "Consumer Financial Protection Bureau",
+      "raw_name": "BUREAU OF CONSUMER FINANCIAL PROTECTION",
+      "slug": "consumer-financial-protection-bureau"
+    }
+  ],
+  "publication_date": "2026-06-08",
+  "effective_on": "2026-10-01",
+  "citation": "91 FR 24310",
+  "html_url": "https://www.federalregister.gov/documents/2026/06/08/2026-09812/truth-in-lending-regulation-z-home-equity-plan-disclosure-timing",
+  "raw_text_url": "https://www.federalregister.gov/documents/full_text/text/2026/06/08/2026-09812.txt",
+  "cfr_references": [{ "title": 12, "part": 1026 }],
+  "full_text": "AGENCY: Bureau of Consumer Financial Protection.\n\nACTION: Final rule.\n\nSUMMARY: The Bureau of Consumer Financial Protection (Bureau) is amending Regulation Z, which implements the Truth in Lending Act, to revise the timing requirements for disclosures provided in connection with home equity lines of credit. The final rule requires creditors to deliver the home equity brochure and the account-opening disclosures not later than three business days after the creditor receives the consumer's application. The rule is effective October 1, 2026.\n\nDATES: This rule is effective October 1, 2026. Compliance with the amended disclosure timing requirements is mandatory for applications received on or after that date.\n\nFOR FURTHER INFORMATION CONTACT: Office of Regulations, Bureau of Consumer Financial Protection, 1700 G Street NW, Washington, DC 20552.\n\nSUPPLEMENTARY INFORMATION:\n\nI. Background\n\nRegulation Z implements the Truth in Lending Act and applies to open-end consumer credit plans secured by the consumer's principal dwelling, including home equity lines of credit. Under the prior rule, the disclosures and brochure required by section 1026.40 were provided at the time an application was provided to the consumer. The Bureau received comments indicating that applications increasingly arrive through digital channels where no in-person delivery occurs.\n\nII. Summary of the Final Rule\n\nThe final rule amends 12 CFR 1026.40(b) to provide that the disclosures and brochure shall be delivered or placed in the mail not later than three business days after the creditor receives the consumer's application. The amendment aligns the timing standard for home equity lines of credit with the application-based timing used elsewhere in Regulation Z. Creditors remain responsible for ensuring that disclosures reflect the terms of the plan at the time the disclosures are provided."
+}

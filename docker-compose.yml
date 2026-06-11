@@ -1,0 +1,22 @@
+# Local Postgres 16 + pgvector (see TOOLS.md). Credentials are local-dev only and
+# match the documented DATABASE_URL: postgres://regdelta:regdelta@localhost:5432/regdelta
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: regdelta-postgres
+    environment:
+      POSTGRES_USER: regdelta
+      POSTGRES_PASSWORD: regdelta
+      POSTGRES_DB: regdelta
+    ports:
+      - '5432:5432'
+    volumes:
+      - regdelta-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U regdelta']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  regdelta-pgdata:

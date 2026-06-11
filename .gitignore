@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Builds
+.next/
+dist/
+out/
+.turbo/
+*.tsbuildinfo
+
+# Tests
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+# Env & secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Database / local data
+*.sqlite
+pgdata/
+
+# Logs & OS noise
+*.log
+pnpm-debug.log*
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Claude Code local overrides
+.claude/settings.local.json
