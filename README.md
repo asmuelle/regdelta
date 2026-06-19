@@ -2,8 +2,7 @@
 
 > A living, citation-pinned obligation map for SME compliance teams: an agent watches regulators in your jurisdictions daily and maintains an always-current, audit-ready wiki of what changed, who it affects, and what you must do by when — at 1/30th of enterprise RCM pricing.
 
-**Category:** LLM wiki / auto-research (living documents + delta alerts, à la Karpathy) · **Status:** ✅ Tier 1 — survived the platform-risk attack (defensible)
-
+**Category:** LLM wiki / auto-research (living documents + delta alerts, à la Karpathy) 
 ## Scorecard
 
 | Metric | Score |
