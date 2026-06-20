@@ -6,9 +6,16 @@
  * Run locally: `just db-up && DATABASE_URL=postgres://regdelta:regdelta@localhost:5432/regdelta pnpm test`
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { appendEvent, buildAuditExport, verifyEventChain, type EventRecord } from '@regdelta/core';
+import {
+  appendEvent,
+  buildAuditExport,
+  projectReviewState,
+  verifyEventChain,
+  type EventRecord,
+} from '@regdelta/core';
 import { runPipeline } from '@regdelta/pipeline';
 import { applyMigrations, createDbClient, type DbClient } from './client';
+import { recordReviewDecision } from './decisions';
 import { EventRepository } from './repository';
 import {
   loadChangeCards,
@@ -175,5 +182,27 @@ describe.skipIf(!live)('end-to-end pipeline persistence (projections + event log
       generatedAt: '2026-09-01T00:00:00.000Z',
     });
     expect(b.checksum).toBe(a.checksum);
+  });
+
+  // Declared last: it appends seq=16 to the shared log, so earlier tests (which
+  // assert chain validity, not exact counts) are unaffected.
+  it('records a human approval that chains onto the log and resolves the card', async () => {
+    const cards = await loadChangeCards(client, 'co-meridian-home-lending');
+    const card = cards[0]!;
+
+    const event = await recordReviewDecision(client, {
+      actorId: 'reviewer@meridian.example',
+      kind: 'approve_card',
+      subjectId: card.id,
+      reason: 'verified against the pinned source',
+      occurredAt: '2026-06-20T09:30:00.000Z',
+    });
+
+    expect(event.actorType).toBe('human');
+    const loaded = await new EventRepository(client).all();
+    // The decision chained onto the tail and the whole chain still verifies.
+    expect(verifyEventChain(loaded)).toEqual({ valid: true, brokenAtSeq: null });
+    // Projecting the card over the persisted log reflects the human approval.
+    expect(projectReviewState(card, loaded).reviewState).toBe('approved');
   });
 });

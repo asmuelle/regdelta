@@ -64,7 +64,7 @@ Values live in `.env.local` (gitignored). Validate presence at startup; fail fas
 ## Local services
 
 - **Postgres 16 + pgvector** via `docker compose` (`just db-up`), image `pgvector/pgvector:pg16`, port 5432. Holds snapshots, the event log, projections, and embeddings. `docker-compose.yml` arrives with M0.
-- **Inngest dev server** runs via `just dev` once wired (`npx inngest-cli dev`); no cloud account needed locally.
+- **Inngest** serve endpoint is `app/api/inngest/route.ts` (GET/POST/PUT). The `daily-crawl-and-persist` cron function runs the pipeline → `persistPipelineRun`; it no-ops without `DATABASE_URL`. Local discovery: run the app (`just dev`) and `npx inngest-cli dev` against `/api/inngest`; no cloud account needed locally. Cloud needs `INNGEST_EVENT_KEY` / `INNGEST_SIGNING_KEY`. Schema migrations are a deploy step (`just migrate`), not run from the web runtime.
 
 ## CI (.github/workflows/ci.yml)
 
