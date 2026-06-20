@@ -164,6 +164,17 @@ describe('runPipeline (M1 slice, deterministic mocks — no AI API)', () => {
     expect(fannedOut?.actorType).toBe('system');
   });
 
+  it('surfaces a coverage blind spot for a subscribed authority it does not monitor (Invariant 5)', async () => {
+    // Act — the seeded profile is exposed to US-CA, but M1 monitors only federal sources.
+    const result = await runPipeline();
+
+    // Assert — completeness (not just freshness) flags the unmonitored CA authority.
+    expect(result.coverage.complete).toBe(false);
+    expect(result.coverage.blindSpots.some((spot) => spot.jurisdiction === 'US-CA')).toBe(true);
+    const coverageEvent = result.events.find((e) => e.eventType === 'coverage_assessed');
+    expect(coverageEvent?.actorType).toBe('system');
+  });
+
   it('records every pipeline step in a verifiable hash-chained event log (Invariant 4)', async () => {
     // Act
     const result = await runPipeline();

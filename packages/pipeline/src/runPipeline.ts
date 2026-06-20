@@ -1,6 +1,7 @@
 import {
   DEFAULT_TRIAGE_THRESHOLD,
   applyEmbeddingRanking,
+  assessCoverageCompleteness,
   decideTriage,
   evaluateGate,
   insertedSegments,
@@ -10,6 +11,7 @@ import {
   selectClassificationQueue,
   type ChangeCardDraft,
   type CompanyProfile,
+  type CoverageCompletenessReport,
   type DeltaRecord,
   type DeltaScope,
   type EventRecord,
@@ -48,6 +50,7 @@ export interface PipelineRunResult {
   readonly sources: readonly SourceDefinition[];
   readonly snapshots: ReadonlyMap<string, SnapshotRecord>;
   readonly deltas: readonly DeltaRecord[];
+  readonly coverage: CoverageCompletenessReport;
   readonly classificationQueue: readonly string[];
   readonly topicAssignments: ReadonlyMap<string, readonly TopicAssignment[]>;
   readonly triages: readonly TriageAssessment[];
@@ -380,6 +383,18 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<Pipeli
   const recorder = makeRecorder(options.startedAt ?? PIPELINE_BASE_TIME);
 
   const registry = registerSources(M1_SOURCES);
+
+  // Completeness, not just liveness (Invariant 5): surface subscribed authorities
+  // we do not yet monitor as blind spots, before any delta processing.
+  const coverage = assessCoverageCompleteness({ profile, topics, sources: M1_SOURCES });
+  recorder.record(
+    systemEvent('coverage_assessed', {
+      profileId: profile.id,
+      complete: coverage.complete,
+      blindSpots: coverage.blindSpots.map((spot) => `${spot.agency} (${spot.jurisdiction})`),
+    }),
+  );
+
   const slice = ingestSlice(registry, recorder);
   const deltas = detectSlice(slice, recorder);
   const classified = await classifySlice(deltas, slice, registry, profile, topics, ports, recorder);
@@ -411,6 +426,7 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<Pipeli
     sources: M1_SOURCES,
     snapshots: slice.snapshots,
     deltas,
+    coverage,
     classificationQueue: classified.queue,
     topicAssignments: classified.assignmentsByDelta,
     triages,
