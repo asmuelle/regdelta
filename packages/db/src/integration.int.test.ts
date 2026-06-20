@@ -7,8 +7,16 @@
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { appendEvent, buildAuditExport, verifyEventChain, type EventRecord } from '@regdelta/core';
+import { runPipeline } from '@regdelta/pipeline';
 import { applyMigrations, createDbClient, type DbClient } from './client';
 import { EventRepository } from './repository';
+import {
+  loadChangeCards,
+  loadSnapshots,
+  persistPipelineRun,
+  type DeltaTriage,
+  type PersistInput,
+} from './projections';
 
 const databaseUrl = process.env['DATABASE_URL'];
 const live = typeof databaseUrl === 'string' && databaseUrl.length > 0;
@@ -89,5 +97,83 @@ describe.skipIf(!live)('event log persistence + append-only enforcement (Invaria
       generatedAt: '2026-09-01T00:00:00.000Z',
     });
     expect(second.checksum).toBe(first.checksum);
+  });
+});
+
+// Runs after the append-only suite (same file → sequential), so the two suites
+// never race on the global events.seq primary key against the shared database.
+describe.skipIf(!live)('end-to-end pipeline persistence (projections + event log)', () => {
+  let client: DbClient;
+
+  beforeAll(async () => {
+    client = createDbClient(databaseUrl as string, { max: 1 });
+    await applyMigrations(client);
+    await client.sql`TRUNCATE TABLE events, change_cards, deltas, snapshots, companies, sources CASCADE`;
+
+    const run = await runPipeline();
+    const triageByDelta = new Map<string, DeltaTriage>(
+      run.triages.map((triage) => [
+        triage.deltaId,
+        { state: triage.decision, confidence: triage.confidence },
+      ]),
+    );
+    const input: PersistInput = {
+      company: run.profile,
+      sources: run.sources,
+      snapshots: [...run.snapshots.values()],
+      deltas: run.deltas,
+      cards: [...run.published.map((g) => g.card), ...run.reviewQueue.map((g) => g.card)],
+      events: run.events,
+      triageByDelta,
+    };
+    await persistPipelineRun(client, input);
+  }, 60_000);
+
+  afterAll(async () => {
+    if (client !== undefined) {
+      await client.close();
+    }
+  });
+
+  it('persists the published change card with its citations intact', async () => {
+    const cards = await loadChangeCards(client, 'co-meridian-home-lending');
+    expect(cards.length).toBeGreaterThanOrEqual(1);
+    const card = cards[0]!;
+    expect(card.claims.length).toBeGreaterThan(0);
+    expect(typeof card.claims[0]!.citation.charStart).toBe('number');
+    expect(card.effectiveDate).toBe('2026-10-01');
+  });
+
+  it('persists snapshots that still satisfy citation resolution byte-exact', async () => {
+    const snaps = await loadSnapshots(client, 'src-federal-register-cfpb');
+    expect(snaps.length).toBeGreaterThanOrEqual(1);
+    const byId = new Map(snaps.map((s) => [s.id, s]));
+    const cards = await loadChangeCards(client, 'co-meridian-home-lending');
+    for (const claim of cards[0]!.claims) {
+      const snap = byId.get(claim.citation.snapshotId);
+      if (snap === undefined) {
+        continue; // claim may cite the eCFR snapshot under its own source
+      }
+      expect(snap.normalizedText.slice(claim.citation.charStart, claim.citation.charEnd)).toBe(
+        claim.citation.quotedText,
+      );
+    }
+  });
+
+  it('persists an event log that verifies end-to-end and exports reproducibly', async () => {
+    const loaded = await new EventRepository(client).all();
+    expect(loaded.length).toBeGreaterThan(0);
+    expect(verifyEventChain(loaded)).toEqual({ valid: true, brokenAtSeq: null });
+    const a = buildAuditExport({
+      events: loaded,
+      format: 'csv',
+      generatedAt: '2026-06-20T00:00:00.000Z',
+    });
+    const b = buildAuditExport({
+      events: loaded,
+      format: 'json',
+      generatedAt: '2026-09-01T00:00:00.000Z',
+    });
+    expect(b.checksum).toBe(a.checksum);
   });
 });

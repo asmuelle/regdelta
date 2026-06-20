@@ -88,7 +88,7 @@
         },
         "published_at": {
           "name": "published_at",
-          "type": "timestamp with time zone",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         }
@@ -231,7 +231,7 @@
         },
         "detected_at": {
           "name": "detected_at",
-          "type": "timestamp with time zone",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -398,7 +398,7 @@
         },
         "fetched_at": {
           "name": "fetched_at",
-          "type": "timestamp with time zone",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },

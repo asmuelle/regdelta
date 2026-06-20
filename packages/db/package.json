@@ -16,6 +16,7 @@
     "postgres": "^3.4.0"
   },
   "devDependencies": {
+    "@regdelta/pipeline": "workspace:*",
     "drizzle-kit": "^0.31.0"
   }
 }

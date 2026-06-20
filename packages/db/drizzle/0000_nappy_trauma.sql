@@ -13,7 +13,7 @@ CREATE TABLE "change_cards" (
 	"redline" jsonb NOT NULL,
 	"claims" jsonb NOT NULL,
 	"review_state" text NOT NULL,
-	"published_at" timestamp with time zone
+	"published_at" text
 );
 --> statement-breakpoint
 CREATE TABLE "companies" (
@@ -34,7 +34,7 @@ CREATE TABLE "deltas" (
 	"from_snapshot_id" text,
 	"to_snapshot_id" text NOT NULL,
 	"ops" jsonb NOT NULL,
-	"detected_at" timestamp with time zone NOT NULL,
+	"detected_at" text NOT NULL,
 	"triage_state" text DEFAULT 'pending' NOT NULL,
 	"triage_confidence" text
 );
@@ -54,7 +54,7 @@ CREATE TABLE "snapshots" (
 	"id" text PRIMARY KEY NOT NULL,
 	"source_id" text NOT NULL,
 	"url" text NOT NULL,
-	"fetched_at" timestamp with time zone NOT NULL,
+	"fetched_at" text NOT NULL,
 	"content_hash" text NOT NULL,
 	"normalized_text" text NOT NULL
 );

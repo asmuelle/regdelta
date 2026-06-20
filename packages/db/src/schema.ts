@@ -15,10 +15,14 @@ import {
   jsonb,
   pgTable,
   text,
-  timestamp,
   uniqueIndex,
   vector,
 } from 'drizzle-orm/pg-core';
+
+// Provenance timestamps are stored as canonical ISO TEXT, not timestamptz: this
+// product's value is byte-stable provenance, so a stored timestamp must reload
+// exactly as written (timestamptz normalizes format). ISO-8601 strings also sort
+// correctly lexicographically, so range/ordering indexes still behave.
 
 export const sources = pgTable('sources', {
   id: text('id').primaryKey(),
@@ -54,7 +58,7 @@ export const snapshots = pgTable(
       .notNull()
       .references(() => sources.id),
     url: text('url').notNull(),
-    fetchedAt: timestamp('fetched_at', { withTimezone: true, mode: 'string' }).notNull(),
+    fetchedAt: text('fetched_at').notNull(),
     contentHash: text('content_hash').notNull(),
     normalizedText: text('normalized_text').notNull(),
   },
@@ -72,7 +76,7 @@ export const deltas = pgTable('deltas', {
     .notNull()
     .references(() => snapshots.id),
   ops: jsonb('ops').notNull(),
-  detectedAt: timestamp('detected_at', { withTimezone: true, mode: 'string' }).notNull(),
+  detectedAt: text('detected_at').notNull(),
   triageState: text('triage_state', {
     enum: ['pending', 'relevant', 'irrelevant', 'error'],
   })
@@ -101,7 +105,7 @@ export const changeCards = pgTable('change_cards', {
   reviewState: text('review_state', {
     enum: ['auto', 'pending_review', 'approved', 'rejected'],
   }).notNull(),
-  publishedAt: timestamp('published_at', { withTimezone: true, mode: 'string' }),
+  publishedAt: text('published_at'),
 });
 
 /** Append-only audit log (Invariant 4). Tables above are projections of this. */
