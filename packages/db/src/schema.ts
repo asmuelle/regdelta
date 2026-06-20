@@ -113,7 +113,10 @@ export const events = pgTable(
     actorId: text('actor_id').notNull(),
     eventType: text('event_type').notNull(),
     payload: jsonb('payload').notNull(),
-    occurredAt: timestamp('occurred_at', { withTimezone: true, mode: 'string' }).notNull(),
+    // TEXT, not timestamptz: the hash chain is computed over the exact ISO string,
+    // so it must persist and reload byte-identical (timestamptz would normalize it
+    // and silently break verifyEventChain after a reload). Immutable by Invariant 4.
+    occurredAt: text('occurred_at').notNull(),
     prevEventHash: text('prev_event_hash'),
     eventHash: text('event_hash').notNull(),
   },

@@ -1,3 +1,4 @@
+CREATE EXTENSION IF NOT EXISTS vector;--> statement-breakpoint
 CREATE TABLE "change_cards" (
 	"id" text PRIMARY KEY NOT NULL,
 	"delta_id" text NOT NULL,
@@ -44,7 +45,7 @@ CREATE TABLE "events" (
 	"actor_id" text NOT NULL,
 	"event_type" text NOT NULL,
 	"payload" jsonb NOT NULL,
-	"occurred_at" timestamp with time zone NOT NULL,
+	"occurred_at" text NOT NULL,
 	"prev_event_hash" text,
 	"event_hash" text NOT NULL
 );

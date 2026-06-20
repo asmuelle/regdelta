@@ -71,6 +71,7 @@ Values live in `.env.local` (gitignored). Validate presence at startup; fail fas
 - Triggers on `push` and `pull_request`; `ubuntu-latest`, Node 22 + corepack, just via `extractions/setup-just@v3`.
 - **Bootstrapped guard:** if `package.json` is absent, the workflow emits a notice and skips install/build steps — the docs-only scaffold stays green. Once M0 lands, it runs `pnpm install --frozen-lockfile` then `just ci`.
 - A `pgvector/pgvector:pg16` service container is wired via `DATABASE_URL` for tests; it is only exercised once the repo is bootstrapped.
+- **Integration tests** (`*.int.test.ts`, e.g. the events append-only proof) `skipIf` `DATABASE_URL` is unset, so the offline unit suite needs no database; CI sets `DATABASE_URL` and runs the Postgres service, so they execute there and apply migrations themselves. Run locally with `just db-up` then `DATABASE_URL=… pnpm test` (note: a local Postgres already on :5432 will shadow the container — use a free port).
 
 ## AI harness notes (.claude/settings.json)
 
