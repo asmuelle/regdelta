@@ -7,11 +7,14 @@ import type {
   SynthesisInput,
   SynthesisModelPort,
   SynthesisOutput,
+  TopicClassifierInput,
+  TopicClassifierOutput,
+  TopicClassifierPort,
   TriageInput,
   TriageModelPort,
   TriageOutput,
 } from './ports';
-import type { EntailmentVerdict, SnapshotRecord } from '@regdelta/core';
+import type { EntailmentVerdict, SnapshotRecord, TopicAssignment } from '@regdelta/core';
 
 export class SynthesisError extends Error {
   constructor(message: string) {
@@ -27,6 +30,33 @@ const MAX_AMENDMENT_CLAIMS = 3;
 const REQUIREMENT_PATTERN = /\brule (?:requires|amends)\b/i;
 const EFFECTIVE_PATTERN = /\bis effective\b/i;
 
+/**
+ * Deterministic topic classification: keyword overlap between the delta text and
+ * each topic. Recall-biased — any single keyword match assigns the topic, so a
+ * downstream profile can never miss a plausibly-relevant change. Runs once per
+ * delta; the per-profile mapping is pure set math in @regdelta/core.
+ */
+export const deterministicTopicClassifier: TopicClassifierPort = {
+  label: 'deterministic-topic-classifier-mock',
+  classify(input: TopicClassifierInput): Promise<TopicClassifierOutput> {
+    const text = input.deltaText.toLowerCase();
+    const assignments: TopicAssignment[] = [];
+    for (const topic of input.topics) {
+      const matchedKeywords = topic.keywords.filter((keyword) =>
+        text.includes(keyword.toLowerCase()),
+      );
+      if (matchedKeywords.length === 0) {
+        continue;
+      }
+      const confidence = Number(
+        (matchedKeywords.length / topic.keywords.length).toFixed(CONFIDENCE_DECIMALS),
+      );
+      assignments.push({ topicId: topic.id, confidence, matchedKeywords });
+    }
+    return Promise.resolve({ assignments });
+  },
+};
+
 /** Deterministic triage: watch-term overlap against the delta text. */
 export const deterministicTriage: TriageModelPort = {
   label: 'deterministic-triage-mock',
@@ -37,9 +67,7 @@ export const deterministicTriage: TriageModelPort = {
     const raw = terms.length === 0 ? 0 : matched.length / terms.length;
     const confidence = Number(raw.toFixed(CONFIDENCE_DECIMALS));
     const rationale =
-      matched.length > 0
-        ? `matched watch terms: ${matched.join(', ')}`
-        : 'no watch terms matched';
+      matched.length > 0 ? `matched watch terms: ${matched.join(', ')}` : 'no watch terms matched';
     return Promise.resolve({ confidence, rationale });
   },
 };
@@ -76,7 +104,9 @@ function amendmentClaims(input: SynthesisInput): Claim[] {
     return [];
   }
   const { snapshot, insertedSegments } = input.amendment;
-  return insertedSegments.slice(0, MAX_AMENDMENT_CLAIMS).map((segment) => pinClaim(snapshot, segment));
+  return insertedSegments
+    .slice(0, MAX_AMENDMENT_CLAIMS)
+    .map((segment) => pinClaim(snapshot, segment));
 }
 
 function affectedProducts(input: SynthesisInput, claims: readonly Claim[]): string[] {
@@ -155,6 +185,7 @@ export function createModelPorts(env: Record<string, string | undefined> = {}): 
     ? 'deterministic-mock (ANTHROPIC_API_KEY detected; live model adapter lands post-M1)'
     : 'deterministic-mock';
   return {
+    topicClassifier: deterministicTopicClassifier,
     triage: deterministicTriage,
     synthesis: deterministicSynthesis,
     entailment: deterministicEntailment,

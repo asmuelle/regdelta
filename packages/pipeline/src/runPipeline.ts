@@ -1,27 +1,38 @@
 import {
   DEFAULT_TRIAGE_THRESHOLD,
+  applyEmbeddingRanking,
   decideTriage,
   evaluateGate,
   insertedSegments,
   isoAddSeconds,
+  relevantDeltasForProfile,
   scoreMateriality,
+  selectClassificationQueue,
   type ChangeCardDraft,
   type CompanyProfile,
   type DeltaRecord,
+  type DeltaScope,
   type EventRecord,
   type GateResult,
   type PublishedChangeCard,
+  type RegTopic,
   type SnapshotRecord,
   type SourceDefinition,
+  type TopicAssignment,
   type TriageAssessment,
 } from '@regdelta/core';
 import { appendEvent, type EventInput } from '@regdelta/core';
 import { detectDelta } from './detect';
-import { ecfrSectionCurrent, consumerLendingProfile, federalRegisterCfpbDocument } from './fixtures';
+import {
+  ecfrSectionCurrent,
+  consumerLendingProfile,
+  federalRegisterCfpbDocument,
+} from './fixtures';
 import { fetchEcfrSection, fetchFederalRegisterCfpb, snapshotFromFetch } from './ingest';
 import { createModelPorts } from './mocks';
 import type { ModelPorts } from './ports';
 import { M1_SOURCES, registerSources } from './sources';
+import { CONSUMER_LENDING_TOPICS } from './topics';
 
 export const PIPELINE_BASE_TIME = '2026-06-10T06:00:00.000Z';
 export const PIPELINE_ACTOR_SYSTEM = 'pipeline@m1-slice';
@@ -37,6 +48,8 @@ export interface PipelineRunResult {
   readonly sources: readonly SourceDefinition[];
   readonly snapshots: ReadonlyMap<string, SnapshotRecord>;
   readonly deltas: readonly DeltaRecord[];
+  readonly classificationQueue: readonly string[];
+  readonly topicAssignments: ReadonlyMap<string, readonly TopicAssignment[]>;
   readonly triages: readonly TriageAssessment[];
   readonly published: readonly GatedCard[];
   readonly reviewQueue: readonly GatedCard[];
@@ -46,8 +59,15 @@ export interface PipelineRunResult {
 export interface PipelineOptions {
   readonly ports?: ModelPorts;
   readonly profile?: CompanyProfile;
+  readonly topics?: readonly RegTopic[];
   readonly triageThreshold?: number;
   readonly startedAt?: string;
+}
+
+interface ClassifiedSlice {
+  readonly queue: readonly string[];
+  readonly assignmentsByDelta: ReadonlyMap<string, readonly TopicAssignment[]>;
+  readonly triageDeltaIds: readonly string[];
 }
 
 interface Recorder {
@@ -95,7 +115,10 @@ function ingestSlice(
     throw new Error('M1 sources missing from registry');
   }
   const frSnapshot = snapshotFromFetch(fetchFederalRegisterCfpb(frSource), 'snap-fr-2026-09812');
-  const ecfrPrior = snapshotFromFetch(fetchEcfrSection(ecfrSource, 'prior'), 'snap-ecfr-1026-40-prior');
+  const ecfrPrior = snapshotFromFetch(
+    fetchEcfrSection(ecfrSource, 'prior'),
+    'snap-ecfr-1026-40-prior',
+  );
   const ecfrCurrent = snapshotFromFetch(
     fetchEcfrSection(ecfrSource, 'current'),
     'snap-ecfr-1026-40-current',
@@ -147,8 +170,68 @@ function detectSlice(slice: IngestedSlice, recorder: Recorder): DeltaRecord[] {
   return deltas;
 }
 
+/**
+ * Classify each in-jurisdiction delta ONCE into topics (the frontier-cost stage),
+ * then map the profile to topics deterministically (DESIGN.md cost discipline).
+ * Embeddings may only rank the classification queue — never filter it (Invariant 3).
+ */
+async function classifySlice(
+  deltas: readonly DeltaRecord[],
+  slice: IngestedSlice,
+  registry: ReadonlyMap<string, SourceDefinition>,
+  profile: CompanyProfile,
+  topics: readonly RegTopic[],
+  ports: ModelPorts,
+  recorder: Recorder,
+): Promise<ClassifiedSlice> {
+  const scopes: DeltaScope[] = deltas.map((delta) => {
+    const source = registry.get(delta.sourceId);
+    if (source === undefined) {
+      throw new Error(`delta ${delta.id} references unknown source ${delta.sourceId}`);
+    }
+    return { deltaId: delta.id, jurisdiction: source.jurisdiction };
+  });
+  const queue = applyEmbeddingRanking(
+    selectClassificationQueue(scopes, [profile]),
+    new Map<string, number>(),
+  );
+  recorder.record(
+    systemEvent('classification_queue_selected', {
+      deltaIds: [...queue],
+      basis: 'every in-jurisdiction delta classified; embeddings rank only, never filter',
+    }),
+  );
+
+  const assignmentsByDelta = new Map<string, readonly TopicAssignment[]>();
+  for (const deltaId of queue) {
+    const delta = deltas.find((candidate) => candidate.id === deltaId);
+    const current = delta === undefined ? undefined : slice.snapshots.get(delta.toSnapshotId);
+    if (delta === undefined || current === undefined) {
+      throw new Error(`classification queue references an unknown delta/snapshot: ${deltaId}`);
+    }
+    const { assignments } = await ports.topicClassifier.classify({
+      deltaText: current.normalizedText,
+      topics,
+    });
+    assignmentsByDelta.set(deltaId, assignments);
+    recorder.record({
+      actorType: 'model',
+      actorId: ports.topicClassifier.label,
+      eventType: 'delta_classified',
+      payload: { deltaId, topicIds: assignments.map((assignment) => assignment.topicId) },
+    });
+  }
+
+  const triageDeltaIds = relevantDeltasForProfile(profile, topics, assignmentsByDelta);
+  recorder.record(
+    systemEvent('delta_fanned_out', { profileId: profile.id, deltaIds: [...triageDeltaIds] }),
+  );
+  return { queue, assignmentsByDelta, triageDeltaIds };
+}
+
 async function triageSlice(
   deltas: readonly DeltaRecord[],
+  triageDeltaIds: readonly string[],
   slice: IngestedSlice,
   profile: CompanyProfile,
   ports: ModelPorts,
@@ -156,7 +239,11 @@ async function triageSlice(
   recorder: Recorder,
 ): Promise<TriageAssessment[]> {
   const triages: TriageAssessment[] = [];
+  const triageSet = new Set(triageDeltaIds);
   for (const delta of deltas) {
+    if (!triageSet.has(delta.id)) {
+      continue; // classified into topics this profile does not subscribe to
+    }
     const current = slice.snapshots.get(delta.toSnapshotId);
     if (current === undefined) {
       throw new Error(`delta ${delta.id} references unknown snapshot ${delta.toSnapshotId}`);
@@ -251,7 +338,10 @@ async function gateCard(
   ports: ModelPorts,
   recorder: Recorder,
 ): Promise<{ gated: GatedCard; route: GateResult['route'] }> {
-  const verdicts = await ports.entailment.verify({ claims: card.claims, snapshots: slice.snapshots });
+  const verdicts = await ports.entailment.verify({
+    claims: card.claims,
+    snapshots: slice.snapshots,
+  });
   const gate = evaluateGate({ card, snapshots: slice.snapshots, verdicts });
   recorder.record(
     systemEvent('gate_evaluated', {
@@ -262,7 +352,11 @@ async function gateCard(
     }),
   );
   if (gate.route === 'publish') {
-    const published: PublishedChangeCard = { ...card, reviewState: 'auto', publishedAt: recorder.now() };
+    const published: PublishedChangeCard = {
+      ...card,
+      reviewState: 'auto',
+      publishedAt: recorder.now(),
+    };
     recorder.record(
       systemEvent('card_published', { cardId: card.id, publishedAt: published.publishedAt }),
     );
@@ -281,13 +375,23 @@ async function gateCard(
 export async function runPipeline(options: PipelineOptions = {}): Promise<PipelineRunResult> {
   const ports = options.ports ?? createModelPorts();
   const profile = options.profile ?? consumerLendingProfile;
+  const topics = options.topics ?? CONSUMER_LENDING_TOPICS;
   const threshold = options.triageThreshold ?? DEFAULT_TRIAGE_THRESHOLD;
   const recorder = makeRecorder(options.startedAt ?? PIPELINE_BASE_TIME);
 
   const registry = registerSources(M1_SOURCES);
   const slice = ingestSlice(registry, recorder);
   const deltas = detectSlice(slice, recorder);
-  const triages = await triageSlice(deltas, slice, profile, ports, threshold, recorder);
+  const classified = await classifySlice(deltas, slice, registry, profile, topics, ports, recorder);
+  const triages = await triageSlice(
+    deltas,
+    classified.triageDeltaIds,
+    slice,
+    profile,
+    ports,
+    threshold,
+    recorder,
+  );
   const card = await synthesizeCard(slice, deltas, triages, profile, ports, recorder);
 
   const published: GatedCard[] = [];
@@ -307,6 +411,8 @@ export async function runPipeline(options: PipelineOptions = {}): Promise<Pipeli
     sources: M1_SOURCES,
     snapshots: slice.snapshots,
     deltas,
+    classificationQueue: classified.queue,
+    topicAssignments: classified.assignmentsByDelta,
     triages,
     published,
     reviewQueue,

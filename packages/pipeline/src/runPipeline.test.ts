@@ -8,7 +8,7 @@ import {
 } from '@regdelta/core';
 import { consumerLendingProfile } from './fixtures';
 import { createModelPorts } from './mocks';
-import type { ModelPorts, TriageModelPort } from './ports';
+import type { ModelPorts, TopicClassifierPort, TriageModelPort } from './ports';
 import { runPipeline } from './runPipeline';
 
 const dismissiveTriage: TriageModelPort = {
@@ -53,9 +53,9 @@ describe('runPipeline (M1 slice, deterministic mocks — no AI API)', () => {
     for (const claim of card.claims) {
       const snapshot = result.snapshots.get(claim.citation.snapshotId);
       expect(resolveCitation(claim.citation, snapshot)).toEqual({ resolved: true });
-      expect(
-        snapshot?.normalizedText.slice(claim.citation.charStart, claim.citation.charEnd),
-      ).toBe(claim.citation.quotedText);
+      expect(snapshot?.normalizedText.slice(claim.citation.charStart, claim.citation.charEnd)).toBe(
+        claim.citation.quotedText,
+      );
       expect(claim.citation.snapshotContentHash).toBe(snapshot?.contentHash);
     }
   });
@@ -124,6 +124,44 @@ describe('runPipeline (M1 slice, deterministic mocks — no AI API)', () => {
     const triageEvents = result.events.filter((e) => e.eventType === 'delta_triaged');
     expect(triageEvents).toHaveLength(result.deltas.length);
     expect(triageEvents.every((e) => e.actorType === 'model')).toBe(true);
+  });
+
+  it('classifies each delta exactly once — cost is O(deltas), not O(deltas × profiles)', async () => {
+    // Arrange — wrap the classifier to count invocations.
+    let calls = 0;
+    const base = createModelPorts().topicClassifier;
+    const counting: TopicClassifierPort = {
+      label: 'counting-classifier',
+      classify: (input) => {
+        calls += 1;
+        return base.classify(input);
+      },
+    };
+    const ports: ModelPorts = { ...createModelPorts(), topicClassifier: counting };
+
+    // Act
+    const result = await runPipeline({ ports });
+
+    // Assert — one classification per delta; the whole in-jurisdiction set is queued.
+    expect(calls).toBe(result.deltas.length);
+    expect(result.classificationQueue).toHaveLength(result.deltas.length);
+    expect(result.topicAssignments.size).toBe(result.deltas.length);
+  });
+
+  it('records the classify-once / deterministic fan-out stage in the event log', async () => {
+    // Act
+    const result = await runPipeline();
+    const types = result.events.map((event) => event.eventType);
+
+    // Assert
+    for (const step of ['classification_queue_selected', 'delta_classified', 'delta_fanned_out']) {
+      expect(types).toContain(step);
+    }
+    // The classification step is a model actor; queue selection/fan-out are deterministic system steps.
+    const classified = result.events.find((e) => e.eventType === 'delta_classified');
+    expect(classified?.actorType).toBe('model');
+    const fannedOut = result.events.find((e) => e.eventType === 'delta_fanned_out');
+    expect(fannedOut?.actorType).toBe('system');
   });
 
   it('records every pipeline step in a verifiable hash-chained event log (Invariant 4)', async () => {

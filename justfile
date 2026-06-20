@@ -40,6 +40,10 @@ migrate: _bootstrapped
 test: _bootstrapped
     pnpm test
 
+# Run the eval gate only (materiality recall/precision bar; also runs inside `test`)
+eval: _bootstrapped
+    pnpm eval
+
 # Run Playwright e2e tests (apps/web)
 e2e: _bootstrapped
     pnpm e2e

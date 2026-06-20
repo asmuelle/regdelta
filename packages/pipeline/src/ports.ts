@@ -3,7 +3,9 @@ import type {
   CompanyProfile,
   EffectiveDate,
   EntailmentVerdict,
+  RegTopic,
   SnapshotRecord,
+  TopicAssignment,
 } from '@regdelta/core';
 
 /**
@@ -12,6 +14,26 @@ import type {
  * run without any AI API or network access. A live Anthropic adapter plugs in
  * behind these interfaces post-M1 (see TOOLS.md for env vars).
  */
+
+export interface TopicClassifierInput {
+  readonly deltaText: string;
+  readonly topics: readonly RegTopic[];
+}
+
+export interface TopicClassifierOutput {
+  readonly assignments: readonly TopicAssignment[];
+}
+
+/**
+ * The frontier-cost classification stage: runs ONCE per delta (never per profile)
+ * and must see every in-jurisdiction delta — embeddings may rank its queue but
+ * never filter it (see @regdelta/core routing). Profiles then map to topics
+ * deterministically downstream.
+ */
+export interface TopicClassifierPort {
+  readonly label: string;
+  classify(input: TopicClassifierInput): Promise<TopicClassifierOutput>;
+}
 
 export interface TriageInput {
   readonly profile: CompanyProfile;
@@ -73,6 +95,7 @@ export interface EntailmentVerifierPort {
 }
 
 export interface ModelPorts {
+  readonly topicClassifier: TopicClassifierPort;
   readonly triage: TriageModelPort;
   readonly synthesis: SynthesisModelPort;
   readonly entailment: EntailmentVerifierPort;

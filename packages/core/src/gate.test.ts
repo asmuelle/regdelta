@@ -2,11 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { evaluateGate } from './gate';
 import { sha256Hex } from './hash';
 import { validateChangeCardDraft } from './validation';
-import type {
-  ChangeCardDraft,
-  EntailmentVerdict,
-  SnapshotRecord,
-} from './types';
+import type { ChangeCardDraft, EntailmentVerdict, SnapshotRecord } from './types';
 
 const TEXT =
   'The disclosures and brochure shall be delivered not later than three business days after the creditor receives the application. The rule is effective October 1, 2026.';
@@ -22,7 +18,8 @@ const snapshot: SnapshotRecord = {
 
 const snapshots = new Map<string, SnapshotRecord>([[snapshot.id, snapshot]]);
 
-const QUOTE = 'The disclosures and brochure shall be delivered not later than three business days after the creditor receives the application.';
+const QUOTE =
+  'The disclosures and brochure shall be delivered not later than three business days after the creditor receives the application.';
 
 function makeCard(overrides: Partial<ChangeCardDraft> = {}): ChangeCardDraft {
   return {
@@ -77,7 +74,10 @@ describe('evaluateGate', () => {
       claims: [
         {
           ...claim,
-          citation: { ...claim.citation, quotedText: claim.citation.quotedText.replace('three', 'threa') },
+          citation: {
+            ...claim.citation,
+            quotedText: claim.citation.quotedText.replace('three', 'threa'),
+          },
         },
       ],
     };
@@ -114,12 +114,29 @@ describe('evaluateGate', () => {
 
   it('blocks legal-conclusion phrasing in customer-facing copy (Invariant 6)', () => {
     const result = evaluateGate({
-      card: makeCard({ requiredAction: 'You must deliver disclosures within three business days.' }),
+      card: makeCard({
+        requiredAction: 'You must deliver disclosures within three business days.',
+      }),
       snapshots,
       verdicts: allEntailed,
     });
     expect(result.status).toBe('fail');
     expect(result.checks.find((c) => c.code === 'decision_support_language')?.passed).toBe(false);
+  });
+
+  it('routes a directive requiredAction to review even with no forbidden phrase (action policy)', () => {
+    // Arrange — "File ... by" is a customer-directed imperative the entailment
+    // gate cannot verify, but it trips no FORBIDDEN_CONCLUSION_PHRASES.
+    const result = evaluateGate({
+      card: makeCard({ requiredAction: 'File the amended disclosure form with the regulator.' }),
+      snapshots,
+      verdicts: allEntailed,
+    });
+
+    // Assert — decision-support phrasing passes, but the advisory check blocks it.
+    expect(result.checks.find((c) => c.code === 'decision_support_language')?.passed).toBe(true);
+    expect(result.checks.find((c) => c.code === 'action_advisory')?.passed).toBe(false);
+    expect(result.route).toBe('review_queue');
   });
 
   it('fails entailment when verdict count does not cover every claim', () => {

@@ -1,3 +1,4 @@
+import { classifyRequiredAction } from './action';
 import { resolveCitation } from './citations';
 import { findForbiddenPhrases } from './copy';
 import { isValidIsoDate } from './dates';
@@ -27,6 +28,7 @@ export function evaluateGate({ card, snapshots, verdicts }: GateInput): GateResu
     checkCitationsResolve(card, snapshots),
     checkDatesParse(card),
     checkDecisionSupportLanguage(card),
+    checkActionAdvisory(card),
     checkEntailment(card, verdicts),
   ];
   const failed = checks.filter((check) => !check.passed);
@@ -90,6 +92,23 @@ function checkDecisionSupportLanguage(card: ChangeCardDraft): GateCheck {
       found.length === 0
         ? 'no legal-conclusion phrasing detected'
         : `forbidden legal-conclusion phrasing: ${[...new Set(found)].join(', ')} (Invariant 6)`,
+  };
+}
+
+/**
+ * Invariant 6 (action policy): `requiredAction` is unverifiable by entailment, so
+ * it may only auto-publish when it is advisory — a confirm-applicability hedge and
+ * no customer-directed imperative. A directive action routes to human review.
+ */
+function checkActionAdvisory(card: ChangeCardDraft): GateCheck {
+  const result = classifyRequiredAction(card.requiredAction);
+  return {
+    code: 'action_advisory',
+    passed: result.isAdvisory,
+    detail: result.isAdvisory
+      ? 'requiredAction is advisory (hedged, no directive imperative)'
+      : `requiredAction must be human-reviewed — ` +
+        `directives: [${result.directiveTerms.join(', ') || 'none'}], hasHedge: ${result.hasHedge}`,
   };
 }
 

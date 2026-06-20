@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "pnpm --filter @regdelta/web dev",
     "test": "vitest run",
+    "eval": "vitest run eval",
     "e2e": "pnpm --filter @regdelta/web e2e",
     "lint": "eslint .",
     "format": "prettier --write .",
