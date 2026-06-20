@@ -1,5 +1,7 @@
 # RegDelta
 
+[![CI](https://github.com/asmuelle/regdelta/actions/workflows/ci.yml/badge.svg)](https://github.com/asmuelle/regdelta/actions/workflows/ci.yml)
+
 > A living, citation-pinned obligation map for SME compliance teams: an agent watches regulators in your jurisdictions daily and maintains an always-current, audit-ready wiki of what changed, who it affects, and what you must do by when — at 1/30th of enterprise RCM pricing.
 
 **Category:** LLM wiki / auto-research (living documents + delta alerts, à la Karpathy)
