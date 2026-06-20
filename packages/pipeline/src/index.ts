@@ -10,5 +10,7 @@ export * from './fixtures';
 export * from './sources';
 export * from './topics';
 export * from './ingest';
+export * from './http';
+export * from './adapters/federalRegister';
 export * from './detect';
 export * from './runPipeline';
