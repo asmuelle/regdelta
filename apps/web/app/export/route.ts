@@ -1,12 +1,18 @@
 import { buildAuditExport } from '@regdelta/core';
 import { runPipeline } from '@regdelta/pipeline';
+import { currentEntitlements } from '../billing';
 
-// Deterministic + offline (mocked models, checked-in fixtures), so the examiner
-// export prerenders to a stable static artifact.
-export const dynamic = 'force-static';
+// Reads entitlements at request time, so it must be dynamic (not prerendered).
+export const dynamic = 'force-dynamic';
 
-/** GET /export — the examiner audit artifact (CSV), reproducible by content checksum. */
+/** GET /export — the examiner audit artifact (CSV); gated behind the auditExport entitlement. */
 export async function GET(): Promise<Response> {
+  if (!currentEntitlements().auditExport) {
+    return new Response('Examiner export requires a paid plan (Multi-state or Firm).', {
+      status: 402, // Payment Required
+      headers: { 'content-type': 'text/plain; charset=utf-8' },
+    });
+  }
   const result = await runPipeline();
   // generatedAt is metadata only (excluded from the checksum); pin it to the run's
   // first event so the downloaded file is byte-stable across builds.

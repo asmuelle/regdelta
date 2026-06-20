@@ -43,25 +43,27 @@ All code recipes fail with a "not bootstrapped" message until M0 creates `packag
 
 ## Required env vars
 
-| Var                                                      | Purpose                                                                             |
-| -------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `DATABASE_URL`                                           | Postgres connection (local: `postgres://regdelta:regdelta@localhost:5432/regdelta`) |
-| `ANTHROPIC_API_KEY`                                      | Classify + triage + synthesis + entailment model calls (live ports + `eval:live`)   |
-| `ANTHROPIC_MODEL_CHEAP`                                  | Override the cheap classify/triage model (default `claude-haiku-4-5-20251001`)      |
-| `ANTHROPIC_MODEL_FRONTIER`                               | Override the synthesis/entailment model (default `claude-sonnet-4-6`)               |
-| `RUN_LIVE_EVAL`                                          | Set to `1` (with a key) to un-skip the live eval suite; `just eval-live` sets it    |
-| `REGDELTA_SESSION_SECRET`                                | HMAC secret for reviewer sessions; when set, decisions REQUIRE a signed-in reviewer |
-| `REGDELTA_REVIEWERS`                                     | Comma-separated allowlist of reviewer emails permitted to sign in                   |
-| `REGDELTA_ACCESS_CODE`                                   | Shared reviewer access code (paired with the allowlist); empty admits no one        |
-| `DATA_GOV_API_KEY`                                       | regulations.gov                                                                     |
-| `LEGISCAN_API_KEY`                                       | State legislature tracking (M1+: optional until states land)                        |
-| `OPENSTATES_API_KEY`                                     | Legislature cross-check (optional)                                                  |
-| `FIRECRAWL_API_KEY`                                      | Hostile-site adapters only (optional)                                               |
-| `SLACK_WEBHOOK_URL`                                      | Slack incoming-webhook alert delivery; when set, the preferred alert channel        |
-| `RESEND_API_KEY` + `ALERT_EMAIL_FROM` / `ALERT_EMAIL_TO` | Resend email alerts (from + comma-separated recipients); used when no Slack webhook |
-| `SLACK_BOT_TOKEN`                                        | Reserved for richer Slack app integration (webhook covers M3 delivery)              |
-| `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET`            | Billing (M3)                                                                        |
-| `INNGEST_EVENT_KEY` / `INNGEST_SIGNING_KEY`              | Pipeline orchestration (cloud; local dev server needs none)                         |
+| Var                                                      | Purpose                                                                               |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                                           | Postgres connection (local: `postgres://regdelta:regdelta@localhost:5432/regdelta`)   |
+| `ANTHROPIC_API_KEY`                                      | Classify + triage + synthesis + entailment model calls (live ports + `eval:live`)     |
+| `ANTHROPIC_MODEL_CHEAP`                                  | Override the cheap classify/triage model (default `claude-haiku-4-5-20251001`)        |
+| `ANTHROPIC_MODEL_FRONTIER`                               | Override the synthesis/entailment model (default `claude-sonnet-4-6`)                 |
+| `RUN_LIVE_EVAL`                                          | Set to `1` (with a key) to un-skip the live eval suite; `just eval-live` sets it      |
+| `REGDELTA_SESSION_SECRET`                                | HMAC secret for reviewer sessions; when set, decisions REQUIRE a signed-in reviewer   |
+| `REGDELTA_REVIEWERS`                                     | Comma-separated allowlist of reviewer emails permitted to sign in                     |
+| `REGDELTA_ACCESS_CODE`                                   | Shared reviewer access code (paired with the allowlist); empty admits no one          |
+| `DATA_GOV_API_KEY`                                       | regulations.gov                                                                       |
+| `LEGISCAN_API_KEY`                                       | State legislature tracking (M1+: optional until states land)                          |
+| `OPENSTATES_API_KEY`                                     | Legislature cross-check (optional)                                                    |
+| `FIRECRAWL_API_KEY`                                      | Hostile-site adapters only (optional)                                                 |
+| `SLACK_WEBHOOK_URL`                                      | Slack incoming-webhook alert delivery; when set, the preferred alert channel          |
+| `RESEND_API_KEY` + `ALERT_EMAIL_FROM` / `ALERT_EMAIL_TO` | Resend email alerts (from + comma-separated recipients); used when no Slack webhook   |
+| `SLACK_BOT_TOKEN`                                        | Reserved for richer Slack app integration (webhook covers M3 delivery)                |
+| `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET`            | Stripe checkout + webhook signature verification (`verifyStripeSignature`)            |
+| `STRIPE_PRICE_MULTI_STATE` / `STRIPE_PRICE_FIRM`         | Stripe price ids mapped to plan tiers (`tierForPriceId`)                              |
+| `REGDELTA_PLAN_TIER`                                     | Demo entitlement override (`free_scan`/`multi_state`/`firm`); unset = permissive demo |
+| `INNGEST_EVENT_KEY` / `INNGEST_SIGNING_KEY`              | Pipeline orchestration (cloud; local dev server needs none)                           |
 
 Values live in `.env.local` (gitignored). Validate presence at startup; fail fast with a named-var error.
 

@@ -7,6 +7,7 @@ import {
 import { runPipeline } from '@regdelta/pipeline';
 import { submitDecision } from './actions';
 import { authConfigured, currentReviewer } from './auth';
+import { currentEntitlements } from './billing';
 import { loadLiveLog } from './liveLog';
 import { ChangeCardArticle } from './components/ChangeCardArticle';
 import { CoverageHealth } from './components/CoverageHealth';
@@ -51,6 +52,7 @@ export default async function Page() {
     }
   }
   const audit = buildAuditExport({ events, format: 'csv', generatedAt: events[0]?.occurredAt });
+  const canExport = currentEntitlements().auditExport;
 
   return (
     <>
@@ -69,9 +71,13 @@ export default async function Page() {
         and review status, never a legal conclusion.
       </p>
       <p className="record-actions">
-        <a className="action-link" href="/export" download>
-          Download examiner export (CSV)
-        </a>
+        {canExport ? (
+          <a className="action-link" href="/export" download>
+            Download examiner export (CSV)
+          </a>
+        ) : (
+          <span className="mono">Examiner export — paid plan (Multi-state / Firm)</span>
+        )}
         <span className="mono">
           checksum {audit.checksum.slice(0, 16)}… · {audit.eventCount} events
         </span>
