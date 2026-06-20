@@ -4,8 +4,8 @@
  * Invariant notes enforced at the schema level where representable:
  * - `sources.tosBasis` is NOT NULL: a source without a recorded permissible-access
  *   basis is unrepresentable (Invariant 8).
- * - `events` is the append-only audit log (Invariant 4). INSERT-only DB grants and
- *   the UPDATE/DELETE-rejection trigger land in M2; the hash-chain columns exist now.
+ * - `events` is the append-only audit log (Invariant 4). The UPDATE/DELETE-rejection
+ *   trigger + REVOKE ship in migration 0001_event_log_append_only; hash-chain columns here.
  * - `snapshots` are immutable once written; corrections are new snapshots.
  */
 import {

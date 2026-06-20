@@ -9,6 +9,7 @@ export * from './copy';
 export * from './validation';
 export * from './gate';
 export * from './events';
+export * from './export';
 export * from './triage';
 export * from './materiality';
 export * from './materialityEval';
