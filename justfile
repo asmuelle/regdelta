@@ -44,6 +44,10 @@ test: _bootstrapped
 eval: _bootstrapped
     pnpm eval
 
+# Run the LIVE eval against the real Anthropic API (needs ANTHROPIC_API_KEY; not in CI)
+eval-live: _bootstrapped
+    pnpm eval:live
+
 # Run Playwright e2e tests (apps/web)
 e2e: _bootstrapped
     pnpm e2e

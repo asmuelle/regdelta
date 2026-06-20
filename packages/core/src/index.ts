@@ -12,6 +12,7 @@ export * from './events';
 export * from './triage';
 export * from './materiality';
 export * from './materialityEval';
+export * from './classificationEval';
 export * from './alerts';
 export * from './freshness';
 export * from './taxonomy';

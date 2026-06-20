@@ -1,4 +1,5 @@
-import { segmentText, type Citation, type Claim, NONE_STATED } from '@regdelta/core';
+import { segmentText, type Claim, NONE_STATED } from '@regdelta/core';
+import { pinQuote, PinError } from './pin';
 import { sharedTokenCount, tokenCoverage } from './textUtils';
 import type {
   EntailmentInput,
@@ -73,21 +74,14 @@ export const deterministicTriage: TriageModelPort = {
 };
 
 function pinClaim(snapshot: SnapshotRecord, sentence: string): Claim {
-  const charStart = snapshot.normalizedText.indexOf(sentence);
-  if (charStart === -1) {
-    throw new SynthesisError(
-      `cannot pin claim — sentence not found in snapshot ${snapshot.id}: "${sentence.slice(0, 60)}…"`,
-    );
+  try {
+    return pinQuote(snapshot, sentence);
+  } catch (error: unknown) {
+    if (error instanceof PinError) {
+      throw new SynthesisError(error.message);
+    }
+    throw error;
   }
-  const citation: Citation = {
-    snapshotId: snapshot.id,
-    sourceUrl: snapshot.url,
-    snapshotContentHash: snapshot.contentHash,
-    charStart,
-    charEnd: charStart + sentence.length,
-    quotedText: sentence,
-  };
-  return { text: sentence, citation };
 }
 
 function noticeClaims(input: SynthesisInput): Claim[] {
