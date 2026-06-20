@@ -11,6 +11,7 @@ export * from './gate';
 export * from './events';
 export * from './export';
 export * from './triage';
+export * from './review';
 export * from './materiality';
 export * from './materialityEval';
 export * from './classificationEval';
