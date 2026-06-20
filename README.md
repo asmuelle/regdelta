@@ -2,7 +2,7 @@
 
 > A living, citation-pinned obligation map for SME compliance teams: an agent watches regulators in your jurisdictions daily and maintains an always-current, audit-ready wiki of what changed, who it affects, and what you must do by when — at 1/30th of enterprise RCM pricing.
 
-**Category:** LLM wiki / auto-research (living documents + delta alerts, à la Karpathy) 
+**Category:** LLM wiki / auto-research (living documents + delta alerts, à la Karpathy)
 
 ## Concept
 
@@ -23,8 +23,6 @@ Web SaaS as system of record (obligation map, redline diffs, immutable change lo
 ## Why Now (2026 timing)
 
 14,000+ regulatory updates/year with accelerating state-level fragmentation (privacy, AI rules, money-transmitter licensing) make a 1-person manual function impossible. Incumbent RCM is quote-only with zero self-serve tier and zero cheap challengers found. Government primary sources are openly crawlable — immune to the publisher-blocking wall (Cloudflare pay-per-crawl, RSL, 79% of top news sites blocking bots) strangling general-web agents.
-
-
 
 ## Tech Stack & Unit Economics
 

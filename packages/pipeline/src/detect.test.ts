@@ -4,7 +4,10 @@ import { detectDelta } from './detect';
 import { fetchEcfrSection, snapshotFromFetch } from './ingest';
 import { ecfrTitle12Section102640Source } from './sources';
 
-const prior = snapshotFromFetch(fetchEcfrSection(ecfrTitle12Section102640Source, 'prior'), 'snap-prior');
+const prior = snapshotFromFetch(
+  fetchEcfrSection(ecfrTitle12Section102640Source, 'prior'),
+  'snap-prior',
+);
 const current = snapshotFromFetch(
   fetchEcfrSection(ecfrTitle12Section102640Source, 'current'),
   'snap-current',

@@ -71,7 +71,9 @@ describe('canDispatchAlert (Invariant 7)', () => {
   });
 
   it('never alerts on an unpublished card', () => {
-    expect(canDispatchAlert(makeCard({ publishedAt: null, materiality: 'normal' }), [])).toBe(false);
+    expect(canDispatchAlert(makeCard({ publishedAt: null, materiality: 'normal' }), [])).toBe(
+      false,
+    );
   });
 
   it('allows normal-materiality published cards without approval', () => {

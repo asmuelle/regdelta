@@ -46,7 +46,10 @@ export function fetchFederalRegisterCfpb(source: SourceDefinition): AdapterFetch
 export type EcfrVersion = 'prior' | 'current';
 
 /** eCFR adapter — replays recorded point-in-time section snapshots. */
-export function fetchEcfrSection(source: SourceDefinition, version: EcfrVersion): AdapterFetchResult {
+export function fetchEcfrSection(
+  source: SourceDefinition,
+  version: EcfrVersion,
+): AdapterFetchResult {
   if (source.adapterId !== 'ecfr') {
     throw new AdapterError(`source "${source.id}" is not an ecfr source`);
   }

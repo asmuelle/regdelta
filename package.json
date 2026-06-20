@@ -9,12 +9,13 @@
   },
   "scripts": {
     "dev": "pnpm --filter @regdelta/web dev",
-    "test": "vitest run",
+    "test": "vitest run --coverage",
     "eval": "vitest run eval",
     "eval:live": "RUN_LIVE_EVAL=1 vitest run live-eval",
     "e2e": "pnpm --filter @regdelta/web e2e",
     "lint": "eslint .",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "typecheck": "pnpm -r run typecheck",
     "build": "pnpm --filter @regdelta/web run build",
     "migrate": "pnpm --filter @regdelta/db run migrate"

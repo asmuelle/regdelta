@@ -6,17 +6,32 @@ function buildLog(): EventRecord[] {
   let log: EventRecord[] = [];
   log = appendEvent(
     log,
-    { actorType: 'system', actorId: 'crawler', eventType: 'source_crawled', payload: { sourceId: 's1' } },
+    {
+      actorType: 'system',
+      actorId: 'crawler',
+      eventType: 'source_crawled',
+      payload: { sourceId: 's1' },
+    },
     '2026-06-10T06:00:00.000Z',
   );
   log = appendEvent(
     log,
-    { actorType: 'system', actorId: 'differ', eventType: 'delta_detected', payload: { deltaId: 'd1' } },
+    {
+      actorType: 'system',
+      actorId: 'differ',
+      eventType: 'delta_detected',
+      payload: { deltaId: 'd1' },
+    },
     '2026-06-10T06:00:01.000Z',
   );
   log = appendEvent(
     log,
-    { actorType: 'model', actorId: 'triage-mock', eventType: 'triage_completed', payload: { confidence: 0.8 } },
+    {
+      actorType: 'model',
+      actorId: 'triage-mock',
+      eventType: 'triage_completed',
+      payload: { confidence: 0.8 },
+    },
     '2026-06-10T06:00:02.000Z',
   );
   return log;
@@ -42,7 +57,12 @@ describe('appendEvent', () => {
     // Act
     const extended = appendEvent(
       original,
-      { actorType: 'human', actorId: 'reviewer@example.com', eventType: 'human_decision', payload: {} },
+      {
+        actorType: 'human',
+        actorId: 'reviewer@example.com',
+        eventType: 'human_decision',
+        payload: {},
+      },
       '2026-06-10T06:00:03.000Z',
     );
 

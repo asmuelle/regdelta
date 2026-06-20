@@ -3,7 +3,13 @@
  * This package is pure domain logic: no I/O, no network, no database.
  */
 
-export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [key: string]: JsonValue };
 
 export type FeedType = 'api' | 'rss' | 'html';
 export type SourceStatus = 'active' | 'degraded' | 'unsupported';

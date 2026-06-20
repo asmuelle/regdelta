@@ -1,7 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { InvariantViolationError } from '@regdelta/core';
-import { AdapterError, fetchEcfrSection, fetchFederalRegisterCfpb, snapshotFromFetch } from './ingest';
-import { M1_SOURCES, ecfrTitle12Section102640Source, federalRegisterCfpbSource, registerSources } from './sources';
+import {
+  AdapterError,
+  fetchEcfrSection,
+  fetchFederalRegisterCfpb,
+  snapshotFromFetch,
+} from './ingest';
+import {
+  M1_SOURCES,
+  ecfrTitle12Section102640Source,
+  federalRegisterCfpbSource,
+  registerSources,
+} from './sources';
 
 describe('registerSources', () => {
   it('registers the M1 sources, each with a recorded tosBasis', () => {

@@ -49,9 +49,7 @@ function buildLcsTable(a: readonly string[], b: readonly string[]): number[][] {
     for (let j = b.length - 1; j >= 0; j -= 1) {
       // Bounds are guaranteed by the loop ranges.
       table[i]![j] =
-        a[i] === b[j]
-          ? table[i + 1]![j + 1]! + 1
-          : Math.max(table[i + 1]![j]!, table[i]![j + 1]!);
+        a[i] === b[j] ? table[i + 1]![j + 1]! + 1 : Math.max(table[i + 1]![j]!, table[i]![j + 1]!);
     }
   }
   return table;

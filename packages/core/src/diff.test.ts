@@ -13,7 +13,9 @@ const CURRENT = normalizeText(
 describe('segmentText', () => {
   it('splits on paragraph breaks and sentence boundaries without splitting section numbers', () => {
     // Arrange
-    const text = normalizeText('§ 1026.40 Requirements for home equity plans.\n\n(b) Time. The rule under 15 U.S.C. 1604 applies.');
+    const text = normalizeText(
+      '§ 1026.40 Requirements for home equity plans.\n\n(b) Time. The rule under 15 U.S.C. 1604 applies.',
+    );
 
     // Act
     const segments = segmentText(text);
