@@ -17,8 +17,8 @@
   --color-pass: oklch(45% 0.09 150);
 
   /* Typography: serif for rule text, grotesk for chrome, mono for evidence */
-  --font-serif: 'Source Serif 4', 'Source Serif Pro', 'Iowan Old Style', Georgia, 'Times New Roman',
-    serif;
+  --font-serif:
+    'Source Serif 4', 'Source Serif Pro', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
   --font-sans: 'Inter', 'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'IBM Plex Mono', 'SF Mono', 'Menlo', 'Consolas', monospace;
 
@@ -109,12 +109,46 @@ code,
 }
 
 .doctrine {
-  border-bottom: 1px solid var(--color-rule);
   color: var(--color-ink-muted);
   font-family: var(--font-sans);
   font-size: var(--text-small);
   letter-spacing: 0.02em;
-  padding: 0.625rem 0;
+  padding: 0.625rem 0 0.375rem;
+}
+
+/* ---- Record actions (export download) ---------------------------------- */
+
+.record-actions {
+  align-items: baseline;
+  border-bottom: 1px solid var(--color-rule);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  justify-content: space-between;
+  padding-bottom: 0.75rem;
+}
+
+.record-actions .mono {
+  color: var(--color-ink-muted);
+  font-size: var(--text-micro);
+}
+
+.action-link {
+  border: 1px solid var(--color-rule-strong);
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+  font-weight: 600;
+  padding: 0.375rem 0.875rem;
+  text-decoration: none;
+  transition:
+    background var(--duration, 150ms) ease,
+    color var(--duration, 150ms) ease;
+}
+
+.action-link:hover,
+.action-link:focus-visible {
+  background: var(--color-rule-strong);
+  color: var(--color-paper);
 }
 
 /* ---- Sections ---------------------------------------------------------- */
@@ -333,6 +367,50 @@ code,
 .check-fail {
   color: var(--color-oxblood);
   font-weight: 700;
+}
+
+/* ---- Coverage gap (completeness, not just liveness) -------------------- */
+
+.coverage-gap {
+  border: 1px solid var(--color-oxblood);
+  border-left: 3px solid var(--color-oxblood);
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem;
+}
+
+.coverage-gap-head {
+  color: var(--color-oxblood);
+  font-family: var(--font-sans);
+  font-size: var(--text-micro);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin: 0 0 0.625rem;
+  text-transform: uppercase;
+}
+
+.coverage-gap-list {
+  display: grid;
+  gap: 0.375rem;
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.coverage-gap-foot {
+  color: var(--color-ink-muted);
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+  margin: 0.75rem 0 0;
+  max-width: var(--measure);
+}
+
+/* ---- Review queue empty state ------------------------------------------ */
+
+.queue-empty {
+  color: var(--color-ink-muted);
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+  margin: 0;
+  max-width: var(--measure);
 }
 
 /* ---- Footer ------------------------------------------------------------ */
