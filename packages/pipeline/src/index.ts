@@ -13,6 +13,7 @@ export * from './ingest';
 export * from './http';
 export * from './notify';
 export * from './adapters/federalRegister';
+export * from './adapters/ecfr';
 export * from './adapters/notifiers';
 export * from './detect';
 export * from './runPipeline';
