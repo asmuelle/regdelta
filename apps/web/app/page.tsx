@@ -1,25 +1,40 @@
-import { buildAuditExport, reviewQueue, verifyEventChain } from '@regdelta/core';
+import {
+  buildAuditExport,
+  projectReviewState,
+  reviewQueue,
+  verifyEventChain,
+} from '@regdelta/core';
 import { runPipeline } from '@regdelta/pipeline';
+import { submitDecision } from './actions';
+import { loadLiveLog } from './liveLog';
 import { ChangeCardArticle } from './components/ChangeCardArticle';
 import { CoverageHealth } from './components/CoverageHealth';
 import { EventLedger } from './components/EventLedger';
 import { GateChecklist } from './components/GateChecklist';
 import { ReviewQueue } from './components/ReviewQueue';
 
+// Dynamic: the page reads the persisted event log at request time when a database
+// is configured (so reviewer decisions are reflected). Without one it degrades to
+// the in-process pipeline run, so the build and the demo work with no database.
+export const dynamic = 'force-dynamic';
+
 /**
- * M1 slice, rendered read-only: the deterministic pipeline runs at build time
- * against checked-in fixtures (no network, no database, LLM steps mocked) and
- * this page renders its output as the document of record.
+ * The obligation record. The deterministic pipeline supplies the change card,
+ * gate, coverage, and sources; the event log (and thus review state) comes from
+ * Postgres when configured, otherwise from the in-memory run.
  */
 export default async function Page() {
   const result = await runPipeline();
-  const published = result.published[0];
-  const chain = verifyEventChain(result.events);
+  const { events, interactive } = await loadLiveLog(result);
 
-  // Derived read-models for the surfaces below.
+  const published = result.published[0];
+  const displayedCard =
+    published === undefined ? undefined : projectReviewState(published.card, events);
+  const chain = verifyEventChain(events);
+
   const cards = [...result.published, ...result.reviewQueue].map((gated) => gated.card);
-  const queue = reviewQueue(cards, result.events);
-  const now = result.events.at(-1)?.occurredAt ?? result.events[0]?.occurredAt ?? '';
+  const queue = reviewQueue(cards, events);
+  const now = events.at(-1)?.occurredAt ?? events[0]?.occurredAt ?? '';
   const lastSuccessBySource: Record<string, string> = {};
   for (const snapshot of result.snapshots.values()) {
     const prev = lastSuccessBySource[snapshot.sourceId];
@@ -27,11 +42,7 @@ export default async function Page() {
       lastSuccessBySource[snapshot.sourceId] = snapshot.fetchedAt;
     }
   }
-  const audit = buildAuditExport({
-    events: result.events,
-    format: 'csv',
-    generatedAt: result.events[0]?.occurredAt,
-  });
+  const audit = buildAuditExport({ events, format: 'csv', generatedAt: events[0]?.occurredAt });
 
   return (
     <>
@@ -40,7 +51,8 @@ export default async function Page() {
           Reg<span className="delta">Delta</span>
         </p>
         <p className="masthead-meta">
-          Obligation record · {result.profile.name} · run {result.events[0]?.occurredAt ?? '—'}
+          Obligation record · {result.profile.name} ·{' '}
+          {interactive ? 'live (database)' : 'read-only (in-process)'}
         </p>
       </header>
       <p className="doctrine">
@@ -57,10 +69,29 @@ export default async function Page() {
       </p>
 
       <main>
-        {published !== undefined ? (
+        {published !== undefined && displayedCard !== undefined ? (
           <>
             <section className="section" aria-label="Published change card">
-              <ChangeCardArticle card={published.card} gate={published.gate} />
+              <ChangeCardArticle card={displayedCard} gate={published.gate} />
+              {interactive ? (
+                <div className="reviewer-controls" role="group" aria-label="Reviewer decision">
+                  <span className="reviewer-controls-label">Reviewer decision</span>
+                  <form action={submitDecision} className="decision-form">
+                    <input type="hidden" name="cardId" value={displayedCard.id} />
+                    <input type="hidden" name="kind" value="approve_card" />
+                    <button type="submit" className="decision approve">
+                      Approve
+                    </button>
+                  </form>
+                  <form action={submitDecision} className="decision-form">
+                    <input type="hidden" name="cardId" value={displayedCard.id} />
+                    <input type="hidden" name="kind" value="reject_card" />
+                    <button type="submit" className="decision reject">
+                      Reject
+                    </button>
+                  </form>
+                </div>
+              ) : null}
             </section>
             <GateChecklist gate={published.gate} />
           </>
@@ -74,8 +105,8 @@ export default async function Page() {
           </section>
         )}
 
-        <ReviewQueue queue={queue} />
-        <EventLedger events={result.events} chainValid={chain.valid} />
+        <ReviewQueue queue={queue} interactive={interactive} />
+        <EventLedger events={events} chainValid={chain.valid} />
         <CoverageHealth
           sources={result.sources}
           coverage={result.coverage}

@@ -403,6 +403,69 @@ code,
   max-width: var(--measure);
 }
 
+/* ---- Reviewer decision controls ---------------------------------------- */
+
+.reviewer-controls {
+  align-items: center;
+  border-top: 1px solid var(--color-rule);
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+}
+
+.reviewer-controls-label {
+  color: var(--color-ink-muted);
+  font-family: var(--font-sans);
+  font-size: var(--text-micro);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  margin-right: auto;
+  text-transform: uppercase;
+}
+
+.decision-form {
+  margin: 0;
+}
+
+.decision-cell {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.decision {
+  background: transparent;
+  border: 1px solid currentcolor;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+  font-weight: 600;
+  padding: 0.3125rem 0.875rem;
+  transition:
+    background 150ms ease,
+    color 150ms ease;
+}
+
+.decision.approve {
+  color: var(--color-pass);
+}
+
+.decision.reject {
+  color: var(--color-oxblood);
+}
+
+.decision.approve:hover,
+.decision.approve:focus-visible {
+  background: var(--color-pass);
+  color: var(--color-paper);
+}
+
+.decision.reject:hover,
+.decision.reject:focus-visible {
+  background: var(--color-oxblood);
+  color: var(--color-paper);
+}
+
 /* ---- Review queue empty state ------------------------------------------ */
 
 .queue-empty {

@@ -4,12 +4,31 @@ import {
   type DeltaTriage,
   type PersistInput,
 } from '@regdelta/db';
-import { runPipeline } from '@regdelta/pipeline';
+import { runPipeline, type PipelineRunResult } from '@regdelta/pipeline';
 
 export interface RunSummary {
   readonly eventCount: number;
   readonly cardCount: number;
   readonly coverageComplete: boolean;
+}
+
+/** Map a pipeline run onto the persistence input (shared by the cron and page seeding). */
+export function toPersistInput(run: PipelineRunResult): PersistInput {
+  const triageByDelta = new Map<string, DeltaTriage>(
+    run.triages.map((triage) => [
+      triage.deltaId,
+      { state: triage.decision, confidence: triage.confidence },
+    ]),
+  );
+  return {
+    company: run.profile,
+    sources: run.sources,
+    snapshots: [...run.snapshots.values()],
+    deltas: run.deltas,
+    cards: [...run.published.map((g) => g.card), ...run.reviewQueue.map((g) => g.card)],
+    events: run.events,
+    triageByDelta,
+  };
 }
 
 /**
@@ -19,26 +38,11 @@ export interface RunSummary {
  */
 export async function runAndPersist(client: DbClient): Promise<RunSummary> {
   const run = await runPipeline();
-  const triageByDelta = new Map<string, DeltaTriage>(
-    run.triages.map((triage) => [
-      triage.deltaId,
-      { state: triage.decision, confidence: triage.confidence },
-    ]),
-  );
-  const cards = [...run.published.map((g) => g.card), ...run.reviewQueue.map((g) => g.card)];
-  const input: PersistInput = {
-    company: run.profile,
-    sources: run.sources,
-    snapshots: [...run.snapshots.values()],
-    deltas: run.deltas,
-    cards,
-    events: run.events,
-    triageByDelta,
-  };
+  const input = toPersistInput(run);
   await persistPipelineRun(client, input);
   return {
     eventCount: run.events.length,
-    cardCount: cards.length,
+    cardCount: input.cards.length,
     coverageComplete: run.coverage.complete,
   };
 }
