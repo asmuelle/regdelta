@@ -9,6 +9,8 @@
       content="RegDelta watches your regulators daily and maintains an always-current, citation-pinned obligation map: redline diffs of what changed, who it affects, and what you must do by when. An audit-ready system of record — not another alert newsletter."
     />
     <meta name="theme-color" content="#FFFFFF" />
+    <link rel="canonical" href="https://asmuelle.github.io/regdelta/" />
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1" />
 
     <link
       rel="icon"
@@ -17,17 +19,32 @@
     />
 
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://asmuelle.github.io/regdelta/" />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:title" content="RegDelta — A living obligation map for compliance teams" />
     <meta
       property="og:description"
       content="An agent watches your regulators daily and maintains a citation-pinned, audit-ready obligation map. Redline diffs of what changed, who it affects, and the deadline — at a fraction of enterprise RCM pricing."
     />
     <meta property="og:site_name" content="RegDelta" />
-    <meta property="og:image" content="og.png" />
+    <meta property="og:image" content="https://asmuelle.github.io/regdelta/og.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="RegDelta regulatory redline diff card showing changed rule text, effective date, affected product, and required action."
+    />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="og.png" />
+    <meta name="twitter:title" content="RegDelta — A living obligation map for compliance teams" />
+    <meta
+      name="twitter:description"
+      content="An agent watches your regulators daily and maintains a citation-pinned, audit-ready obligation map. Redline diffs of what changed, who it affects, and the deadline — at a fraction of enterprise RCM pricing."
+    />
+    <meta name="twitter:image" content="https://asmuelle.github.io/regdelta/og.png" />
+    <meta
+      name="twitter:image:alt"
+      content="RegDelta regulatory redline diff card showing changed rule text, effective date, affected product, and required action."
+    />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -1141,6 +1158,125 @@
       async
       src="//gc.zgo.at/count.js"
     ></script>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://asmuelle.github.io/regdelta/#website",
+            "url": "https://asmuelle.github.io/regdelta/",
+            "name": "RegDelta",
+            "description": "RegDelta watches your regulators daily and maintains an always-current, citation-pinned obligation map: redline diffs of what changed, who it affects, and what you must do by when. An audit-ready system of record — not another alert newsletter.",
+            "publisher": { "@id": "https://asmuelle.github.io/regdelta/#organization" },
+            "inLanguage": "en-US"
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://asmuelle.github.io/regdelta/#organization",
+            "name": "RegDelta",
+            "url": "https://asmuelle.github.io/regdelta/",
+            "logo": "https://asmuelle.github.io/regdelta/og.png"
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://asmuelle.github.io/regdelta/#software",
+            "name": "RegDelta",
+            "url": "https://asmuelle.github.io/regdelta/",
+            "description": "RegDelta watches your regulators daily and maintains an always-current, citation-pinned obligation map: redline diffs of what changed, who it affects, and what you must do by when. An audit-ready system of record — not another alert newsletter.",
+            "applicationCategory": "BusinessApplication",
+            "publisher": { "@id": "https://asmuelle.github.io/regdelta/#organization" },
+            "offers": {
+              "@type": "AggregateOffer",
+              "priceCurrency": "USD",
+              "lowPrice": "249",
+              "highPrice": "1250",
+              "offerCount": "3",
+              "offers": [
+                {
+                  "@type": "Offer",
+                  "name": "Core",
+                  "description": "One regulatory domain, 3 jurisdictions. The obligation map and redline change cards.",
+                  "priceCurrency": "USD",
+                  "price": "249",
+                  "priceSpecification": {
+                    "@type": "UnitPriceSpecification",
+                    "price": "249",
+                    "priceCurrency": "USD",
+                    "unitCode": "MON"
+                  }
+                },
+                {
+                  "@type": "Offer",
+                  "name": "Multi-state",
+                  "description": "15 jurisdictions, real-time Slack alerts, and the examiner-facing audit export.",
+                  "priceCurrency": "USD",
+                  "price": "599",
+                  "priceSpecification": {
+                    "@type": "UnitPriceSpecification",
+                    "price": "599",
+                    "priceCurrency": "USD",
+                    "unitCode": "MON"
+                  }
+                },
+                {
+                  "@type": "Offer",
+                  "name": "Firm",
+                  "description": "For fractional-compliance consultancies and accounting firms managing many clients.",
+                  "priceCurrency": "USD",
+                  "price": "1250",
+                  "priceSpecification": {
+                    "@type": "UnitPriceSpecification",
+                    "price": "1250",
+                    "priceCurrency": "USD",
+                    "unitCode": "MON"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://asmuelle.github.io/regdelta/#faq",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "How accurate is it — can I rely on it for an exam?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "RegDelta is engineered for high recall on material changes: every published change card pins the exact source text and citation, and passes an entailment check plus deterministic validators (dates parse, citations resolve, the summary is supported by the source) before going live. High-materiality items also route through an editorial review queue. That said — no automated monitoring system catches every change, and the fatal error class for any such tool is omission, which a summary check cannot detect. RegDelta is a research and monitoring tool that makes your review faster and defensible; it is not a substitute for your own compliance judgment, and you remain responsible for what you file."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What does coverage actually include?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Federal sources (Federal Register, eCFR, regulations.gov, agency dockets) are open and structured, so they get full redline diffs. State coverage expands jurisdiction by jurisdiction; some state administrative codes are published through restrictive third-party portals, so for those we're explicit about which states get full redlines versus citation-and-alert. We launch deep in one domain and a defined jurisdiction set rather than promising shallow 50-state coverage we couldn't stand behind in an exam."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How is this different from ChatGPT, Google Alerts, or enterprise RCM?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "General chatbots are stateless, don't track effective dates, and produce citation errors that are fatal in compliance — you can't show a regenerating answer to an examiner. Alerts and law-firm newsletters tell you something happened, not the redline, the applicability, or the deadline. Enterprise RCM (the kind sold to banks) is quote-only and far out of an SME budget. RegDelta sits in the gap: a maintained obligation map with an immutable, versioned audit trail, priced for a 1–3 person team."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Is RegDelta legal advice?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "No. RegDelta is a regulatory research and monitoring tool. It surfaces and organizes primary-source material so your compliance team can act faster — it does not interpret the law for your specific situation, does not constitute legal advice, and does not create an attorney–client relationship. For decisions that carry legal consequence, consult qualified counsel."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <a href="#main" class="visually-hidden">Skip to content</a>

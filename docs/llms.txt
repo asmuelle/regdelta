@@ -1,0 +1,42 @@
+# RegDelta
+
+> RegDelta runs an agent across your regulators every day and keeps a citation-pinned obligation map current: redline diffs of what changed, who it affects, and the deadline. An audit-ready system of record — not another alert newsletter.
+
+## What it is
+
+RegDelta is a regulatory change management tool for SME compliance teams. A deterministic pipeline (not a chatbot guessing) diffs primary sources daily, triages each change against your company profile, and updates a living obligation map. Each obligation node pins the exact source text, citation, and effective date — versioned, not regenerated — backed by an immutable audit log of "we detected rule X on date Y and acted." It is a regulatory research and monitoring tool, not legal advice and not a substitute for your own compliance review or qualified counsel.
+
+## Who it's for
+
+- Small and medium-sized compliance functions, including one- to three-person teams.
+- Fractional-compliance consultancies and accounting firms managing many clients.
+- Teams facing state-level fragmentation in privacy, AI, and licensing that can no longer run on Google Alerts and a spreadsheet.
+
+## Key features
+
+- Change cards: every change shown as a literal before/after redline of the rule text, with affected products and the required action attached.
+- Obligation map: a living article per topic × jurisdiction (e.g. "BNPL lending — California") carrying pinned source text, effective date, comment deadline, and a full version history.
+- Alerts: high-materiality changes alert immediately to Slack and email; everything else batches into one weekly digest.
+- Audit export: full versioned change history exports as an examiner-facing PDF or CSV audit log ("detected on, classified as, acted by"). Gated to paid tiers.
+- Verification: an entailment check and deterministic validators confirm dates parse, citations resolve, and summaries are supported by the cited source before anything publishes; high-materiality cards pass through an editorial review queue.
+
+## Pricing
+
+Indicative pre-launch pricing, priced below quote-only enterprise RCM and above a plain alert feed.
+
+- Core — $249 / mo: One regulatory domain, 3 jurisdictions. Citation-pinned obligation map, redline change cards, weekly digest.
+- Multi-state — $599 / mo (popular): 15 jurisdictions, immediate Slack & email alerts, PDF / CSV audit-trail export, full version history. + $25 / mo per additional jurisdiction.
+- Firm — $1,250 / mo: For fractional-compliance consultancies and accounting firms. 5 client profiles included, white-label digests, multi-client obligation maps, everything in Multi-state. + $150 / mo per client profile beyond 5.
+
+A free 30-day regulatory exposure scan maps your obligations before you pay. Annual prepay planned (2 months free).
+
+## FAQ highlights
+
+- How accurate is it for an exam? Engineered for high recall on material changes with pinned source text, citation, entailment checks, and an editorial review queue — but no automated system catches every change, and it is not a substitute for your own compliance judgment.
+- What does coverage include? Federal sources (Federal Register, eCFR, regulations.gov, agency dockets) get full redline diffs; state coverage expands jurisdiction by jurisdiction, with some restricted-portal states on citation-and-alert.
+- How is it different from ChatGPT, Google Alerts, or enterprise RCM? It is a maintained obligation map with an immutable, versioned audit trail, priced for a 1–3 person team — versus stateless chatbots, bare alerts, or quote-only enterprise RCM.
+- Is it legal advice? No. It is a regulatory research and monitoring tool; it does not constitute legal advice or create an attorney–client relationship.
+
+## Link
+
+- Home: https://asmuelle.github.io/regdelta/
