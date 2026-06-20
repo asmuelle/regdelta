@@ -8,3 +8,5 @@ pnpm-lock.yaml
 packages/db/drizzle/
 .claude/
 pgdata/
+# Next.js-generated; reformatted on every build, not ours to lint
+**/next-env.d.ts

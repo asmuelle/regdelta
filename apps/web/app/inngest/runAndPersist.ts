@@ -4,12 +4,20 @@ import {
   type DeltaTriage,
   type PersistInput,
 } from '@regdelta/db';
-import { runPipeline, type PipelineRunResult } from '@regdelta/pipeline';
+import {
+  createHttpClient,
+  dispatchAlerts,
+  notifierFromEnv,
+  runPipeline,
+  type PipelineRunResult,
+} from '@regdelta/pipeline';
 
 export interface RunSummary {
   readonly eventCount: number;
   readonly cardCount: number;
   readonly coverageComplete: boolean;
+  readonly alertsDelivered: number;
+  readonly alertChannel: string;
 }
 
 /** Map a pipeline run onto the persistence input (shared by the cron and page seeding). */
@@ -40,9 +48,17 @@ export async function runAndPersist(client: DbClient): Promise<RunSummary> {
   const run = await runPipeline();
   const input = toPersistInput(run);
   await persistPipelineRun(client, input);
+
+  // Dispatch eligible alerts (Invariant 7 gating is inside dispatchAlerts). Falls
+  // back to the console notifier when no delivery channel is configured.
+  const notifier = notifierFromEnv(process.env, createHttpClient());
+  const deliveries = await dispatchAlerts(notifier, input.cards, run.events);
+
   return {
     eventCount: run.events.length,
     cardCount: input.cards.length,
     coverageComplete: run.coverage.complete,
+    alertsDelivered: deliveries.filter((d) => d.delivered).length,
+    alertChannel: notifier.channel,
   };
 }

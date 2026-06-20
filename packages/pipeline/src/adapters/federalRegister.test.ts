@@ -10,15 +10,13 @@ function ok(text: string): HttpResponse {
 
 /** Fake client: route URLs to canned responses; record what was requested. */
 function fakeHttp(routes: Record<string, HttpResponse>): HttpClient {
-  return {
-    get: (url) => {
-      const match = Object.entries(routes).find(([key]) => url.includes(key));
-      if (match === undefined) {
-        return Promise.resolve({ status: 404, ok: false, text: `no route for ${url}` });
-      }
-      return Promise.resolve(match[1]);
-    },
+  const lookup = (url: string): Promise<HttpResponse> => {
+    const match = Object.entries(routes).find(([key]) => url.includes(key));
+    return Promise.resolve(
+      match === undefined ? { status: 404, ok: false, text: `no route for ${url}` } : match[1],
+    );
   };
+  return { get: lookup, post: (url) => lookup(url) };
 }
 
 const RAW_TEXT_URL =
