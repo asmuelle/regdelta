@@ -6,12 +6,14 @@ import {
 } from '@regdelta/core';
 import { runPipeline } from '@regdelta/pipeline';
 import { submitDecision } from './actions';
+import { authConfigured, currentReviewer } from './auth';
 import { loadLiveLog } from './liveLog';
 import { ChangeCardArticle } from './components/ChangeCardArticle';
 import { CoverageHealth } from './components/CoverageHealth';
 import { EventLedger } from './components/EventLedger';
 import { GateChecklist } from './components/GateChecklist';
 import { ReviewQueue } from './components/ReviewQueue';
+import { SignIn } from './components/SignIn';
 
 // Dynamic: the page reads the persisted event log at request time when a database
 // is configured (so reviewer decisions are reflected). Without one it degrades to
@@ -26,6 +28,12 @@ export const dynamic = 'force-dynamic';
 export default async function Page() {
   const result = await runPipeline();
   const { events, interactive } = await loadLiveLog(result);
+
+  // Reviewer auth: when configured, decisions require a signed-in reviewer.
+  const authOn = authConfigured();
+  const reviewer = await currentReviewer();
+  const needsSignIn = interactive && authOn && reviewer === null;
+  const canDecide = interactive && (!authOn || reviewer !== null);
 
   const published = result.published[0];
   const displayedCard =
@@ -53,6 +61,7 @@ export default async function Page() {
         <p className="masthead-meta">
           Obligation record · {result.profile.name} ·{' '}
           {interactive ? 'live (database)' : 'read-only (in-process)'}
+          {reviewer !== null ? ` · reviewer ${reviewer.email}` : ''}
         </p>
       </header>
       <p className="doctrine">
@@ -73,7 +82,7 @@ export default async function Page() {
           <>
             <section className="section" aria-label="Published change card">
               <ChangeCardArticle card={displayedCard} gate={published.gate} />
-              {interactive ? (
+              {canDecide ? (
                 <div className="reviewer-controls" role="group" aria-label="Reviewer decision">
                   <span className="reviewer-controls-label">Reviewer decision</span>
                   <form action={submitDecision} className="decision-form">
@@ -105,7 +114,8 @@ export default async function Page() {
           </section>
         )}
 
-        <ReviewQueue queue={queue} interactive={interactive} />
+        {needsSignIn ? <SignIn /> : null}
+        <ReviewQueue queue={queue} interactive={canDecide} />
         <EventLedger events={events} chainValid={chain.valid} />
         <CoverageHealth
           sources={result.sources}

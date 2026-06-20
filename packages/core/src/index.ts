@@ -17,6 +17,7 @@ export * from './materialityEval';
 export * from './classificationEval';
 export * from './alerts';
 export * from './freshness';
+export * from './auth';
 export * from './taxonomy';
 export * from './routing';
 export * from './action';

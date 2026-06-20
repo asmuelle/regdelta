@@ -9,8 +9,8 @@ import { runAndPersist } from './runAndPersist';
  * retry/replay envelope; the work itself stays deterministic.
  */
 export const dailyCrawl = inngest.createFunction(
-  { id: 'daily-crawl-and-persist' },
-  { cron: '0 6 * * *' },
+  // Inngest v4: the trigger moved into the options object as `triggers`.
+  { id: 'daily-crawl-and-persist', triggers: [{ cron: '0 6 * * *' }] },
   async () => {
     const databaseUrl = process.env['DATABASE_URL'];
     if (databaseUrl === undefined || databaseUrl.length === 0) {

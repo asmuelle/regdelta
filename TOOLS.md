@@ -50,6 +50,9 @@ All code recipes fail with a "not bootstrapped" message until M0 creates `packag
 | `ANTHROPIC_MODEL_CHEAP`                       | Override the cheap classify/triage model (default `claude-haiku-4-5-20251001`)      |
 | `ANTHROPIC_MODEL_FRONTIER`                    | Override the synthesis/entailment model (default `claude-sonnet-4-6`)               |
 | `RUN_LIVE_EVAL`                               | Set to `1` (with a key) to un-skip the live eval suite; `just eval-live` sets it    |
+| `REGDELTA_SESSION_SECRET`                     | HMAC secret for reviewer sessions; when set, decisions REQUIRE a signed-in reviewer |
+| `REGDELTA_REVIEWERS`                          | Comma-separated allowlist of reviewer emails permitted to sign in                   |
+| `REGDELTA_ACCESS_CODE`                        | Shared reviewer access code (paired with the allowlist); empty admits no one        |
 | `DATA_GOV_API_KEY`                            | regulations.gov                                                                     |
 | `LEGISCAN_API_KEY`                            | State legislature tracking (M1+: optional until states land)                        |
 | `OPENSTATES_API_KEY`                          | Legislature cross-check (optional)                                                  |
